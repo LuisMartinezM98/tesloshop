@@ -3,7 +3,7 @@ import Link from "next/link";
 
 
 
-export default function ProductNotFoundPage () {
+export default function GenderNotFoundPage() {
 
     return(
         <PageNotFound/>
