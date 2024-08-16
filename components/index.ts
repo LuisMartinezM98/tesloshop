@@ -13,4 +13,4 @@ export * from './product/sise-selector/SizeSelector';
 export * from './product/quantity-selector/QuantitySelector';
 export * from './product/slideshow/ProductSlideShow';
 export * from './product/slideshow/ProducMobiletSlideShow';
-
+export * from './product/stock-label/StockLabel';

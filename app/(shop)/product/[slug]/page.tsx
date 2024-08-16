@@ -1,35 +1,64 @@
+export const revalidate = 604800; //7dias
 
-import { ProductMobileSlideShow, ProductSlideShow, QuantitySelector, SizeSelector } from "@/components";
+import { Metadata, ResolvingMetadata } from "next";
+
+import { getProductBySlug } from "@/actions";
+import { ProductMobileSlideShow, ProductSlideShow, QuantitySelector, SizeSelector, StockLabel } from "@/components";
 import { titleFont } from "@/config/fonts";
-import { initialData } from "@/seed/seed";
 import { notFound } from 'next/navigation';
+import { AddToCart } from "./ui/AddToCart";
 
-interface Props{
+
+interface Props {
   params: {
     slug: string;
   }
 }
 
-export default function ProductSlugPage ({params}: Props) {
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  // read route params
+  const slug = params.slug
+ 
+  // fetch data
+  const product = await getProductBySlug(slug);
+ 
+  // optionally access and extend (rather than replace) parent metadata
+  // const previousImages = (await parent).openGraph?.images || []
+ 
+  return {
+    title: product?.title,
+    description: product?.description,
+    openGraph: {
+      title: product?.title,
+      description: product?.description,
+      images: [`/products/${ product?.images[1]}`], //https://misitioweb.com/products/images.png
+    },
+  }
+}
+
+export default async function ProductSlugPage({ params }: Props) {
 
   const { slug } = params;
-  const product = initialData.products.find(product => product.slug === slug);
+  const product = await getProductBySlug(slug);
 
-  if(!product){
+  if (!product) {
     notFound();
   }
 
 
   return (
     <div className="mt-5 mb-20 grid grid-cols-1 md:grid-cols-3 gap-3">
-      
+
       {/* SlideShow */}
       <div className="col-span-1 md:col-span-2 ">
 
         {/* Mobile */}
         <ProductMobileSlideShow
           title={product.title}
-          images={ product.images }
+          images={product.images}
           className="block md:hidden"
         />
 
@@ -44,24 +73,15 @@ export default function ProductSlugPage ({params}: Props) {
 
       {/* Detalles */}
       <div className="col-span-1 px-5 ">
+        
+        <StockLabel slug={product.slug}/>
+
         <h1 className={`${titleFont.className} antialiased font-bold text-xl`}>
           {product.title}
         </h1>
-        <p className="text-lg mb-5"> ${ product.price} </p>
+        <p className="text-lg mb-5"> ${product.price} </p>
 
-        {/* Selector tallas */}
-        <SizeSelector 
-          selectedSize={product.sizes[0]}
-          availableSizes={product.sizes}
-        />
-
-        {/* Cantidad */}
-        <QuantitySelector
-          quantity={2}
-        />
-
-        {/* Boton */}
-        <button className="btn-primary my-5">Agregar al carrito</button>
+        <AddToCart product={product}/>
 
         {/* descripcion */}
         <h3 className="font-bold text-sm">Descripción</h3>
